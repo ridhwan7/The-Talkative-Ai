@@ -1,0 +1,92 @@
+﻿@page "/"
+
+<PageTitle > 
+    Talkative Ai
+</PageTitle>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Talkative - Your Intelligent Virtual Assistant</title>
+<div class="container d-flex flex-column vh-100">
+    
+    
+        <div class="text-center mt-2">
+        <div class="d-flex  justify-content-center text-center  "> <div class="bi-activity me-1 text-success" style="font-size:28px"></div><h3>Welcome to <span class="text-success"> talkative !</span></h3> </div>
+        <div class="d-flex justify-content-center "  <p  class="fs-5">I am the talkative , An Intelligent virtual assistant Here To Serve You</p><sup style=' color:Green; margin-top:15px; font-weight: bold;border-radius:20px'>Powered By Gemini </sup></div>
+        </div>
+    
+
+    <div class="flex-grow-1">
+        @foreach (var message in Messages)
+        {
+            <div class="row p-2">
+                <div class="col-1 rounded-circle bg-dark-subtle text-center m-2 p-0"
+                     style="width:50px;height:50px;">
+                    <span style="margin-left:150px"  class="bi  fs-2 @(message.IsUser ? "bi-person-fill" : "bi-activity text-success")"></span>
+                </div>
+
+                <div style="margin-left:150px" class="col-11 justify-content-center   p-3 shadow-sm @(message.IsUser ? "text-bg-dark w-auto  " : " shadow-bottom text-bg-light text-success col-xl-9 rounded-3")">
+                    @if (message.IsUser)
+                    {
+                        @message.Content
+                    }
+                    else
+                    {
+                       
+                        if (message.Content is "Exception: TypeError: Failed to fetch")
+                            message.Content = "Please Check Your Internet Connection and try Again";
+                       
+
+
+                       
+                        
+                            @((MarkupString)HighlightSpecialWords(message.Content))
+                        
+                    }
+
+                  
+                </div>
+             
+                @if (_isSendingMessage && message ==_currentProcessingMessage)
+                {
+                    <div  class="spinner-grow ms-1 ps-2 pe-2 spinner-grow-sm text-dark" style="align-self:center;" role="status"></div>
+                }
+               
+            </div>
+        }
+    </div>
+
+    <div class="sticky-bottom w-50 p-3 rounded mx-auto">
+        @if (_isSendingMessage)
+        {
+            <div class="text-center">
+                <div class="spinner-border spinner-border-sm" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        <div class="input-group">
+
+            <textarea rows="2" class="form-control  text-bg-dark" placeholder="Ask your question..."
+                      @bind-value="_userQuestion" @bind-value:event="oninput" @onkeypress="HandleKeyPress"
+                      disabled="@_isSendingMessage">
+            </textarea>
+            <button class="btn btn-danger" @onclick="ClearConversation">
+                <span class="bi bi-eraser"></span>
+            </button>
+          
+        </div>
+    </div>
+</div>
+
+@code {
+    private string HighlightSpecialWords(string input)
+    {
+        if (string.IsNullOrEmpty(input))
+            return string.Empty;
+
+        return System.Text.RegularExpressions.Regex.Replace(
+            input,
+            @"\*\*(.*?)\*\*",
+            "<span style='background-color: Green ;color:white; font-weight: bold;'>$1</span>"
+        );
+    }
+}
